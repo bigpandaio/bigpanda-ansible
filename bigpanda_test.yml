@@ -1,0 +1,54 @@
+- name: BigPanda Action Module Test
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Merge Incidents
+      bigpanda.incident.merge:
+        incident_id: "{{ incident_id }}"
+        comment: "This is a test from the Ansible collection"
+        api_token: "{{ api_token }}"
+        environment_id: "{{ environment_id }}"
+        source_incidents: "{{ source_incidents }}"
+      register: out
+    - debug: var=out
+    - name: Split Incidents
+      bigpanda.incident.split:
+        incident_id: "{{ incident_id }}"
+        comment: "This is a test from the Ansible collection"
+        api_token: "{{ api_token }}"
+        environment_id: "{{ environment_id }}"
+        alert_ids: "{{ alert }}"
+      register: out
+    - debug: var=out
+    - name: Resolve alerts
+      bigpanda.incident.resolveAlerts:
+          api_token: "{{ api_token }}"
+          environment_id: "{{ environment_id }}"
+          alert_ids: "{{ alert_ids }}"
+      register: out
+    - debug: var=out
+    - name: Add/Update Incident Tag
+      bigpanda.incident.addTag:
+        tag_id: "{{ tag_id }}"
+        tag_value: "{{ tag_value }}"
+        incident_id: "{{ incident_id }}"
+        api_token: "{{ api_token }}"
+        environment_id: "{{ environment_id }}"
+      register: out
+    - debug: var=out
+    - name: Add Comment to Incident
+      bigpanda.incident.comment:
+        incident_id: "{{ incident_id }}"
+        comment: "This is a test from the Ansible collection"
+        api_token: "{{ api_token }}"
+        environment_id: "{{ environment_id }}"
+      register: out
+    - debug: var=out
+    - name: Resolve Incident
+      bigpanda.incident.resolve:
+        incident_id: "{{ incident_id }}"
+        resolution_comment: "Solved Incident from Ansible"
+        api_token: "{{ api_token }}"
+        environment_id: "{{ environment_id }}"
+      register: out
+    - debug: var=out
