@@ -1,12 +1,64 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
 
-import requests
-from requests import HTTPError
-
+from __future__ import (absolute_import, division, print_function)
 from ansible.module_utils.basic import AnsibleModule
+from requests import HTTPError
+import requests
+__metaclass__ = type
+
+
+DOCUMENTATION = """
+module: bigpanda.incident.split
+author: JuanDCardozo
+short_description: Split a BigPanda incident into multiple incidents.
+description:
+  - This module splits a BigPanda incident into multiple incidents.
+options:
+  incident_id:
+    description: The ID of the incident to split.
+    required: true
+  comment:
+    description: A comment describing the split.
+    required: false
+  api_token:
+    description: The API token for authentication.
+    required: true
+  environment_id:
+    description: The environment ID.
+    required: true
+  alert_ids:
+    description: A list of alert IDs to split.
+    required: true
+"""
+
+EXAMPLES = """
+- name: Split incidents
+  bigpanda.incident.split:
+    incident_id: "source_incident"
+    comment: "Splitting the incident."
+    api_token: "your_api_token"
+    environment_id: "your_environment"
+    alert_ids:
+      - "alert1"
+      - "alert2"
+"""
+
+RETURN = """
+changed:
+  description: Indicates if the incident was successfully split.
+  type: bool
+  returned: true/false
+  sample: true
+result:
+  description: The response from the BigPanda server.
+  type: str
+  returned: BigPanda's Response
+  sample: "Incident split successfully."
+"""
 
 
 def main():
+
     module = AnsibleModule(
         argument_spec=dict(
             environment_id=dict(type='str', required=True),
@@ -37,8 +89,7 @@ def main():
         response = requests.post(
             f'https://api.bigpanda.io/resources/v2.0/environments/{environment_id}/incidents/{incident_id}/split',
             headers=headers,
-            json=data
-        )
+            json=data)
 
         response.raise_for_status()
         module.exit_json(changed=True, result=response.text)
