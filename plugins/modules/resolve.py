@@ -1,9 +1,50 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
 
-import requests
-from requests import HTTPError
-
+from __future__ import (absolute_import, division, print_function)
 from ansible.module_utils.basic import AnsibleModule
+from requests import HTTPError
+import requests
+
+__metaclass__ = type
+
+DOCUMENTATION = """
+module: bigpanda.incident.resolve
+author: JuanDCardozo
+short_description: Resolve a BigPanda incident.
+description:
+  - This module resolves a BigPanda incident by providing the incident ID and an optional resolution message.
+options:
+  incident_id:
+    description: The ID of the incident to resolve.
+    required: true
+  resolution_comment:
+    description: The resolution message for the incident.
+    required: false
+  api_token:
+    description: The API token for authentication.
+    required: true
+"""
+
+EXAMPLES = """
+- name: Resolve an incident
+  bigpanda.incident.resolve:
+    incident_id: "12345"
+    resolution_comment: "Incident resolved."
+    api_token: "your_api_token"
+"""
+
+RETURN = """
+changed:
+  description: Indicates if the incident resolution was successful.
+  type: bool
+  returned: true/false
+  sample: true
+result:
+  description: The response from the BigPanda server.
+  type: str
+  returned: BigPanda's Response
+  sample: "Incident resolved successfully."
+"""
 
 
 def main():
@@ -39,8 +80,7 @@ def main():
         response = requests.post(
             f'https://api.bigpanda.io/resources/v2.0/environments/{environment_id}/incidents/{incident_id}/resolve',
             headers=headers,
-            json=json_data
-        )
+            json=json_data)
 
         response.raise_for_status()
         module.exit_json(changed=True, result=response.text)

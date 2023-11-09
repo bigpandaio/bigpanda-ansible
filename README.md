@@ -1,39 +1,8 @@
 # BigPanda Ansible Collection
 
-## Using and Developing with the Ansible Collection
-
-### Running Ansible Playbook Locally and Testing Functionality
-
-To use and develop with the BigPanda Ansible Collection, follow these steps:
-
-1. Build and install the BigPanda collection. Run the following commands to build and install the collection in the "./collections" folder. You need to perform this step whenever you make changes:
-
-   ```bash
-   ansible-galaxy collection build --force
-   ansible-galaxy collection install bigpanda-incident-<VERSION>.tar.gz -p ./collections -f
-   ```
-
-2. Run the Ansible playbook for testing. Replace the placeholders with your specific information:
-
-   ```bash
-   ansible-playbook ./bigpanda_test.yml --extra-vars='{"environment_id": "YOUR-ENV-ID","api_token": "YOUR-API-TOKEN", "incident_id":"YOUR-INCIDENT-ID", "tag_id": "test", "tag_value": "success"}'
-   ```
-
-### Running in an Instance
-
-To run in an instance, you'll need to create a decision environment for EDA (Event-Driven Automation) and/or an execution environment for AAP (Ansible Automation Platform). Follow these guides:
-
-- [Decision Environment Guide](https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.4/html/event-driven_ansible_controller_user_guide/eda-decision-environments)
-- [Execution Environment Guide](https://docs.ansible.com/automation-controller/4.0.0/html/userguide/execution_environments.html)
-
-These guides will help you set up the necessary environments for BigPanda Ansible Collection.
-
-
-Here's the reorganized Markdown for easier readability and understanding:
-
 ## Action Modules
 
-The BigPanda Ansible Collection provides various action modules to interact with the BigPanda resource management system. These modules allow you to perform operations such as resolving incidents, resolving alerts, adding comments to incidents, updating incident tags, merging incidents, and splitting incidents.
+The BigPanda Ansible Collections provides various action modules to interact with the BigPanda resource management system. These modules allow you to perform operations such as resolving incidents, resolving alerts, adding comments to incidents, updating incident tags, merging incidents, and splitting incidents.
 
 To use these action modules, include them in your Ansible playbook and provide the required parameters for the specific function you want to execute.
 
@@ -58,7 +27,7 @@ Parameters:
 
 ### Resolve Alerts
 
-The `bigpanda.incident.resolveAlerts` module allows you to resolve an alert by providing the alert ID and resolution message.
+The `bigpanda.incident.resolve_alerts` module allows you to resolve an alert by providing the alert ID and resolution message.
 
 Parameters:
 - `alert_ids` (required): The ID of the alert to resolve.
@@ -69,7 +38,7 @@ Parameters:
 
 ```yaml
 - name: Resolve Alert
-  bigpanda.incident.resolveAlert:
+  bigpanda.incident.resolve_alert:
     alert_ids: <alert_id>
     resolution: <resolution>
     api_token: <api_token>
@@ -96,7 +65,7 @@ Parameters:
 
 ### Update Incident Tag
 
-Use the `bigpanda.incident.updateIncidentTag` module to update an incident tag. Provide the tag ID, tag value, incident ID, and API token.
+Use the `bigpanda.incident.add_tag` module to update an incident tag. Provide the tag ID, tag value, incident ID, and API token.
 
 Parameters:
 - `tag_id` (required): The ID of the tag to update.
@@ -108,7 +77,7 @@ Parameters:
 
 ```yaml
 - name: Update Incident Tag
-  bigpanda.incident.updateIncidentTag:
+  bigpanda.incident.add_tag:
     tag_id: <tag_id>
     tag_value: <tag_value>
     incident_id: <incident_id>
@@ -154,3 +123,31 @@ The `bigpanda.incident.split` module allows you to split a single incident into 
 ```
 
 These action modules provide a flexible way to manage incidents and alerts in the BigPanda platform. Use the provided examples in your Ansible playbooks to streamline your incident and alert management processes.
+
+## Using and Developing with the Ansible Collection
+
+### Running Ansible Playbook Locally and Testing Functionality
+
+To use and develop with the BigPanda Ansible Collection, follow these steps:
+
+1. Build and install the BigPanda collection. Run the following commands to build and install the collection in the "./collections" folder. You need to perform this step whenever you make changes:
+
+   ```bash
+   ansible-galaxy collection build --force
+   ansible-galaxy collection install bigpanda-incident-<VERSION>.tar.gz -p ./collections -f
+   ```
+
+2. Run the Ansible playbook for testing. Replace the placeholders with your specific information:
+
+   ```bash
+   ansible-playbook ./tests/integration/bigpanda_test.yml --extra-vars='{"environment_id": "YOUR-ENV-ID","api_token": "YOUR-API-TOKEN", "incident_id":"YOUR-INCIDENT-ID", "tag_id": "test", "tag_value": "success"}'
+   ```
+
+### Running in an Instance
+
+To run in an instance, you'll need to create a decision environment for EDA (Event-Driven Automation) and/or an execution environment for AAP (Ansible Automation Platform). Follow these guides:
+
+- [Decision Environment Guide](https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.4/html/event-driven_ansible_controller_user_guide/eda-decision-environments)
+- [Execution Environment Guide](https://docs.ansible.com/automation-controller/4.0.0/html/userguide/execution_environments.html)
+
+These guides will help you set up the necessary environments for BigPanda Ansible Collection.

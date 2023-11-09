@@ -1,12 +1,58 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
 
-import requests
-from requests import HTTPError
-
+from __future__ import (absolute_import, division, print_function)
 from ansible.module_utils.basic import AnsibleModule
+from requests import HTTPError
+import requests
+
+__metaclass__ = type
+
+DOCUMENTATION = """
+module: bigpanda.incident.add_tag
+author: JuanDCardozo
+short_description: Update a BigPanda incident tag.
+description:
+  - This module updates a BigPanda incident tag by providing the tag ID, tag value, incident ID, and an API token.
+options:
+  tag_id:
+    description: The ID of the tag to update.
+    required: true
+  tag_value:
+    description: The new value for the tag.
+    required: true
+  incident_id:
+    description: The ID of the incident to update.
+    required: true
+  api_token:
+    description: The API token for authentication.
+    required: true
+"""
+
+EXAMPLES = """
+- name: Update an incident tag
+  bigpanda.incident.add_tag:
+    tag_id: "tag123"
+    tag_value: "NewTagValue"
+    incident_id: "incident456"
+    api_token: "your_api_token"
+"""
+
+RETURN = """
+changed:
+  description: Indicates if the tag update was successful.
+  type: bool
+  returned: true/false
+  sample: true
+result:
+  description: The response from the BigPanda server.
+  type: str
+  returned: BigPanda's Response
+  sample: "Tag updated successfully."
+"""
 
 
 def main():
+
     module = AnsibleModule(
         argument_spec=dict(
             tag_id=dict(type='str', required=True),
@@ -42,8 +88,7 @@ def main():
         response = requests.post(
             f'https://api.bigpanda.io/resources/v2.0/environments/{environment_id}/incidents/{incident_id}/tags/{tag_id}',
             headers=headers,
-            json=json_data
-        )
+            json=json_data)
 
         response.raise_for_status()
         module.exit_json(changed=True, result=response.text)

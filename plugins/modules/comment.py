@@ -1,9 +1,51 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
 
-import requests
-from requests import HTTPError
-
+from __future__ import (absolute_import, division, print_function)
 from ansible.module_utils.basic import AnsibleModule
+from requests import HTTPError
+import requests
+__metaclass__ = type
+
+
+DOCUMENTATION = """
+module: bigpanda.incident.comment
+author: JuanDCardozo
+short_description: Add a comment to a BigPanda incident.
+description:
+  - This module adds a comment to a BigPanda incident by providing the incident ID and the comment text.
+options:
+  incident_id:
+    description: The ID of the incident to add a comment to.
+    required: true
+  comment:
+    description: The text of the comment.
+    required: true
+  api_token:
+    description: The API token for authentication.
+    required: true
+"""
+
+EXAMPLES = """
+- name: Add a comment to an incident
+  bigpanda.incident.comment:
+    incident_id: "12345"
+    comment: "This is a test comment."
+    api_token: "your_api_token"
+"""
+
+RETURN = """
+changed:
+  description: Indicates if the comment addition was successful.
+  type: bool
+  returned: true/false
+  sample: true
+result:
+  description: The response from the BigPanda server.
+  type: str
+  returned: BigPanda's Response
+  sample: "Comment added successfully."
+"""
+
 
 def main():
     module = AnsibleModule(
@@ -42,6 +84,7 @@ def main():
     except HTTPError as e:
         # Log any HTTP errors
         module.fail_json(msg=f"An HTTP error occurred: {str(e)}")
+
 
 if __name__ == '__main__':
     main()
