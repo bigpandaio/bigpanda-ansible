@@ -1,18 +1,18 @@
 #!/usr/bin/python
+# Copyright 2023 BigPanda
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
-from ansible.module_utils.basic import AnsibleModule
-from requests import HTTPError
-import requests
 
 __metaclass__ = type
 
 DOCUMENTATION = """
-module: bigpanda.incident.add_tag
-author: JuanDCardozo
-short_description: Update a BigPanda incident tag.
+author:
+    - Juan Cardozo (@JuanDCardozo)
 description:
   - This module updates a BigPanda incident tag by providing the tag ID, tag value, incident ID, and an API token.
+module: add_tag
 options:
   tag_id:
     description: The ID of the tag to update.
@@ -26,6 +26,8 @@ options:
   api_token:
     description: The API token for authentication.
     required: true
+short_description: Update a BigPanda incident tag.
+version_added: 1.0.0
 """
 
 EXAMPLES = """
@@ -49,6 +51,10 @@ result:
   returned: BigPanda's Response
   sample: "Tag updated successfully."
 """
+
+from ansible.module_utils.basic import AnsibleModule
+from requests import HTTPError
+import requests
 
 
 def main():

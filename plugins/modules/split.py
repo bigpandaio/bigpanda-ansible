@@ -1,18 +1,19 @@
 #!/usr/bin/python
+# Copyright 2023 BigPanda
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
-from ansible.module_utils.basic import AnsibleModule
-from requests import HTTPError
-import requests
+
 __metaclass__ = type
 
 
 DOCUMENTATION = """
-module: bigpanda.incident.split
-author: JuanDCardozo
-short_description: Split a BigPanda incident into multiple incidents.
+author:
+  - Juan Cardozo (@JuanDCardozo)
 description:
   - This module splits a BigPanda incident into multiple incidents.
+module: split
 options:
   incident_id:
     description: The ID of the incident to split.
@@ -29,6 +30,8 @@ options:
   alert_ids:
     description: A list of alert IDs to split.
     required: true
+short_description: Split a BigPanda incident into multiple incidents.
+version_added: 1.0.0
 """
 
 EXAMPLES = """
@@ -55,6 +58,10 @@ result:
   returned: BigPanda's Response
   sample: "Incident split successfully."
 """
+
+from ansible.module_utils.basic import AnsibleModule
+from requests import HTTPError
+import requests
 
 
 def main():

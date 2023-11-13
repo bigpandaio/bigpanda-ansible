@@ -1,18 +1,19 @@
 #!/usr/bin/python
+# Copyright 2023 BigPanda
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
-from ansible.module_utils.basic import AnsibleModule
-from requests import HTTPError
-import requests
+
 __metaclass__ = type
 
 
 DOCUMENTATION = """
-module: bigpanda.incident.comment
-author: JuanDCardozo
-short_description: Add a comment to a BigPanda incident.
+author:
+    - Juan Cardozo (@JuanDCardozo)
 description:
   - This module adds a comment to a BigPanda incident by providing the incident ID and the comment text.
+module: comment
 options:
   incident_id:
     description: The ID of the incident to add a comment to.
@@ -23,6 +24,8 @@ options:
   api_token:
     description: The API token for authentication.
     required: true
+short_description: Add a comment to a BigPanda incident.
+version_added: 1.0.0
 """
 
 EXAMPLES = """
@@ -45,6 +48,10 @@ result:
   returned: BigPanda's Response
   sample: "Comment added successfully."
 """
+
+from ansible.module_utils.basic import AnsibleModule
+from requests import HTTPError
+import requests
 
 
 def main():
