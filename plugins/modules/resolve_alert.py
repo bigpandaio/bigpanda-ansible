@@ -1,18 +1,18 @@
 #!/usr/bin/python
+# Copyright 2023 BigPanda
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-from ansible.module_utils.basic import AnsibleModule
-from requests import HTTPError
-import requests
 
 __metaclass__ = type
 
 DOCUMENTATION = """
-module: bigpanda.incident.resolve_alert
-author: JuanDCardozo
-short_description: Resolve a BigPanda alert.
+author:
+  - Juan Cardozo (@JuanDCardozo)
 description:
   - This module resolves a BigPanda alert by providing the alert ID and an optional resolution message.
+module: resolve_alert
 options:
   alert_ids:
     description: The ID of the alert to resolve.
@@ -23,6 +23,8 @@ options:
   api_token:
     description: The API token for authentication.
     required: true
+short_description: Resolve a BigPanda alert.
+version_added: 1.0.0
 """
 
 EXAMPLES = """
@@ -45,6 +47,10 @@ result:
   returned: BigPanda's Response
   sample: "Alert resolved successfully."
 """
+
+from ansible.module_utils.basic import AnsibleModule
+from requests import HTTPError
+import requests
 
 
 def main():

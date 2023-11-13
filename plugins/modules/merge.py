@@ -1,19 +1,18 @@
 #!/usr/bin/python
+# Copyright 2023 BigPanda
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-
-import requests
-from requests import HTTPError
-from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
 DOCUMENTATION = """
-module: bigpanda.incident.merge
-author: JuanDCardozo
-short_description: Merge multiple BigPanda incidents into one.
+author:
+  - Juan Cardozo (@JuanDCardozo)
 description:
   - This module merges multiple BigPanda incidents into a single incident.
+module: merge
 options:
   incident_id:
     description: The ID of the incident to merge into.
@@ -30,6 +29,8 @@ options:
   source_incidents:
     description: A list of incident IDs to merge.
     required: true
+short_description: Merge multiple BigPanda incidents into one.
+version_added: 1.0.0
 """
 
 EXAMPLES = """
@@ -56,6 +57,10 @@ result:
   returned: BigPanda's Response
   sample: "Incidents merged successfully."
 """
+
+import requests
+from requests import HTTPError
+from ansible.module_utils.basic import AnsibleModule
 
 
 def main():
