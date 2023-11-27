@@ -44,6 +44,27 @@ Parameters:
     api_token: <api_token>
 ```
 
+### Assign User to Incident
+
+Use the `bigpanda.incident.assign_user` action module to assign a user to be responsible for an incident in BigPanda by providing the incident ID and the user's ID.
+
+Parameters:
+- `environment_id` (required): The ID of the environment.
+- `api_token` (required): The API token for authentication.
+- `incident_id` (required): The ID of the incident to assign a user to.
+- `assignee_id` (required): The ID of the user to be assigned.
+
+**Example:**
+
+```yaml
+- name: Assign User to Incident
+  bigpanda.incident.assign:
+    environment_id: <environment_id>
+    api_token: <api_token>
+    incident_id: <incident_id>
+    assignee_id: <assignee_id>
+```
+
 ### Add Comment to Incident
 
 You can add a comment to an incident using the `bigpanda.incident.comment` module. Provide the incident ID and the comment text.
