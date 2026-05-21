@@ -1,7 +1,9 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 # Copyright 2023 BigPanda
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -17,12 +19,19 @@ options:
   incident_id:
     description: The ID of the incident to resolve.
     required: true
+    type: str
   resolution_comment:
     description: The resolution message for the incident.
     required: false
+    type: str
   api_token:
     description: The API token for authentication.
     required: true
+    type: str
+  environment_id:
+    description: The ID of the environment.
+    required: true
+    type: str
 short_description: Resolve a BigPanda incident.
 version_added: 1.0.0
 """
@@ -33,24 +42,26 @@ EXAMPLES = """
     incident_id: "12345"
     resolution_comment: "Incident resolved."
     api_token: "your_api_token"
+    environment_id: "your_environment_id"
 """
 
 RETURN = """
 changed:
   description: Indicates if the incident resolution was successful.
   type: bool
-  returned: true/false
+  returned: always
   sample: true
 result:
   description: The response from the BigPanda server.
   type: str
-  returned: BigPanda's Response
+  returned: success
   sample: "Incident resolved successfully."
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from requests import HTTPError
-import requests
+from ansible_collections.bigpanda.incident.plugins.module_utils.bigpanda_common import (
+    bigpanda_request,
+)
 
 
 def main():
@@ -59,40 +70,20 @@ def main():
             resolution_comment=dict(type='str', required=False),
             environment_id=dict(type='str', required=True),
             incident_id=dict(type='str', required=True),
-            api_token=dict(type='str', required=True),
+            api_token=dict(type='str', required=True, no_log=True),
         ),
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
-    resolution_comment = module.params['resolution_comment']
-    environment_id = module.params['environment_id']
     incident_id = module.params['incident_id']
-    api_token = module.params['api_token']
+    resolution_comment = module.params['resolution_comment']
 
-    module.debug("Resolve Incident")
-
-    # Set the request headers
-    headers = {
-        'Authorization': f'Bearer {api_token}',
-        'Content-Type': 'application/json',
-    }
-
-    # Prepare the JSON data to be sent with the request
-    json_data = {
-        'comments': resolution_comment
-    }
-
-    try:
-        response = requests.post(
-            f'https://api.bigpanda.io/resources/v2.0/environments/{environment_id}/incidents/{incident_id}/resolve',
-            headers=headers,
-            json=json_data)
-
-        response.raise_for_status()
-        module.exit_json(changed=True, result=response.text)
-    except HTTPError as e:
-        # Log any HTTP errors
-        module.fail_json(msg=f"An HTTP error occurred: {str(e)}")
+    response = bigpanda_request(
+        module, "post",
+        f"incidents/{incident_id}/resolve",
+        {"comments": resolution_comment},
+    )
+    module.exit_json(changed=True, result=response.text)
 
 
 if __name__ == '__main__':
