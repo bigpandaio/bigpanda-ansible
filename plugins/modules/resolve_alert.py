@@ -24,10 +24,9 @@ options:
     type: list
     elements: str
   comments:
-    description: Optional comments to attach to the resolution.
+    description: Optional resolution comment attached to the batch.
     required: false
-    type: list
-    elements: str
+    type: str
   api_token:
     description: The API token for authentication.
     required: true
@@ -42,8 +41,7 @@ EXAMPLES = """
     environment_id: "your_environment_id"
     alert_ids:
       - "54321"
-    comments:
-      - "Alert resolved."
+    comments: "Marking for regional similarity"
     api_token: "your_api_token"
 """
 
@@ -77,7 +75,7 @@ def main():
             environment_id=dict(type='str', required=True),
             api_token=dict(type='str', required=True, no_log=True),
             alert_ids=dict(type='list', elements='str', required=True),
-            comments=dict(type='list', elements='str', required=False),
+            comments=dict(type='str', required=False),
         ),
         supports_check_mode=True,
     )

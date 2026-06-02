@@ -20,11 +20,19 @@ releases:
           across all action modules. The collection no longer pulls in any
           out-of-tree Python dependency, which unblocks publishing to
           Automation Hub.
-        - Rewrote ``extensions/eda/rulebooks/bigpanda-webhook.yml``. The old
-          condition ``event.meta is defined`` matched every webhook because
-          EDA's ``insert_meta_info`` filter always injects ``event.meta``.
-          New rules key on ``event.payload.status`` and
-          ``event.payload.severity`` and dispatch to ``run_job_template``.
+        - All module URL paths, HTTP methods, and request body schemas now
+          match the documented BigPanda v2.0 REST API exactly. In
+          particular ``resolve_alert.comments`` is now a single string
+          (matching the ``POST /batch-resolve/alerts`` body schema) rather
+          than a list of strings.
+        - Rewrote ``extensions/eda/rulebooks/bigpanda-webhook.yml`` to match
+          the documented BigPanda Notifications Webhook v2 payload shape.
+          Rules now key on ``event.payload.incident.resolved``,
+          ``event.payload.incident.active`` and
+          ``event.payload.incident.status``, and dispatch to
+          ``run_job_template`` with ``incident_id`` / ``environment_id``
+          sourced from ``event.payload.incident.id`` and
+          ``event.payload.metadata.environment_id``.
       bugfixes:
         - Fixed ``--check`` mode in all modules. They previously declared
           ``supports_check_mode=True`` but still issued the live HTTP
