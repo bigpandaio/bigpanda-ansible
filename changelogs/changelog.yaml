@@ -1,1 +1,39 @@
-releases: {}
+releases:
+  1.3.0:
+    release_date: '2026-06-01'
+    changes:
+      release_summary: |
+        Refresh for Ansible Automation Platform 2.5 / EDA. Modules now use
+        ansible-core's built-in HTTP client (no external ``requests``
+        dependency), correctly honor ``--check`` mode, and pass
+        ``ansible-test sanity`` cleanly. The EDA rulebook has been rewritten
+        to key on real BigPanda webhook fields and dispatch to AAP job
+        templates instead of a debug stub.
+      breaking_changes:
+        - All incident-scoped modules (``resolve``, ``assign``, ``comment``,
+          ``add_tag``, ``merge``, ``split``) now require ``environment_id``.
+          The previous code path referenced ``environment_id`` but did not
+          declare it in ``argument_spec``, so existing playbooks that omit
+          it must add it.
+      major_changes:
+        - Replaced ``requests`` with ``ansible.module_utils.urls.fetch_url``
+          across all action modules. The collection no longer pulls in any
+          out-of-tree Python dependency, which unblocks publishing to
+          Automation Hub.
+        - Rewrote ``extensions/eda/rulebooks/bigpanda-webhook.yml``. The old
+          condition ``event.meta is defined`` matched every webhook because
+          EDA's ``insert_meta_info`` filter always injects ``event.meta``.
+          New rules key on ``event.payload.status`` and
+          ``event.payload.severity`` and dispatch to ``run_job_template``.
+      bugfixes:
+        - Fixed ``--check`` mode in all modules. They previously declared
+          ``supports_check_mode=True`` but still issued the live HTTP
+          request, violating Ansible's check-mode contract. In check mode
+          they now return the URL that would have been called without
+          touching the network.
+        - Marked ``api_token`` as ``no_log=True`` so it is redacted from
+          task output and the ``-v`` log.
+        - Tightened ``galaxy.yml`` ``build_ignore`` to exclude ``.venv``,
+          ``collections/``, ``.idea``, and ``*.tar.gz``. Without this the
+          collection tarball ballooned to 48MB and ``ansible-test sanity``
+          ended up scanning vendored pip packages.

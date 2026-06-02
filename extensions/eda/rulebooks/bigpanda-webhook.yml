@@ -5,10 +5,36 @@
     - ansible.eda.webhook:
         host: 0.0.0.0
         port: 6000
+        # token: "{{ BIGPANDA_WEBHOOK_TOKEN }}"
+        # hmac_secret: "{{ BIGPANDA_WEBHOOK_HMAC_SECRET }}"
+        # hmac_header: "x-bigpanda-signature"
 
   rules:
-    - name: Get BigPanda Share Information
-      condition: event.meta is defined
+    - name: BigPanda incident resolved
+      condition: event.payload.status == "resolved"
+      action:
+        run_job_template:
+          name: BigPanda - On Incident Resolved
+          organization: Default
+          job_args:
+            extra_vars:
+              incident_id: "{{ event.payload.incident_id }}"
+              environment_id: "{{ event.payload.environment }}"
+
+    - name: BigPanda high-severity incident opened
+      condition: event.payload.status == "active" and event.payload.severity in ["High", "Critical"]
+      action:
+        run_job_template:
+          name: BigPanda - On High Severity Incident
+          organization: Default
+          job_args:
+            extra_vars:
+              incident_id: "{{ event.payload.incident_id }}"
+              environment_id: "{{ event.payload.environment }}"
+              severity: "{{ event.payload.severity }}"
+
+    - name: BigPanda webhook received (catch-all for debugging)
+      condition: event.payload is defined
       action:
         debug:
-        
+          msg: "BigPanda webhook payload: {{ event.payload }}"
