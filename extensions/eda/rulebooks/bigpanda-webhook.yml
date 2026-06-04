@@ -44,9 +44,3 @@
               incident_id: "{{ event.payload.incident.id }}"
               environment_id: "{{ event.payload.metadata.environment_id }}"
               severity: "{{ event.payload.incident.severity }}"
-
-    - name: BigPanda webhook received (catch-all for debugging)
-      condition: event.payload is defined
-      action:
-        debug:
-          msg: "BigPanda webhook payload: {{ event.payload }}"

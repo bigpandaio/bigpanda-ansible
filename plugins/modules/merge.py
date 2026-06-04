@@ -35,6 +35,14 @@ options:
     description: The API token for authentication.
     required: true
     type: str
+  api_url:
+    description:
+      - Base URL of the BigPanda API. Override for EU
+        (C(https://api.eu.bigpanda.io)) or dedicated tenant hosts.
+      - May also be set via the C(BIGPANDA_API_URL) environment variable.
+    required: false
+    type: str
+    default: https://api.bigpanda.io
 short_description: Merge multiple BigPanda incidents into one.
 version_added: 1.0.0
 """
@@ -71,7 +79,7 @@ result:
 
 import json
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule, env_fallback
 from ansible.module_utils.urls import fetch_url
 
 
@@ -83,6 +91,12 @@ def main():
             source_incidents=dict(type='list', elements='str', required=True),
             comment=dict(type='str', required=False),
             api_token=dict(type='str', required=True, no_log=True),
+            api_url=dict(
+                type='str',
+                required=False,
+                default='https://api.bigpanda.io',
+                fallback=(env_fallback, ['BIGPANDA_API_URL']),
+            ),
         ),
         supports_check_mode=True,
     )
@@ -92,11 +106,13 @@ def main():
     source_incidents = module.params['source_incidents']
     comment = module.params['comment']
     api_token = module.params['api_token']
+    api_url = module.params['api_url'].rstrip('/')
 
     url = (
-        'https://api.bigpanda.io/resources/v2.0/environments/'
+        f'{api_url}/resources/v2.0/environments/'
         f'{environment_id}/incidents/{incident_id}/merge'
     )
+    method = 'POST'
     headers = {
         'Authorization': f'Bearer {api_token}',
         'Content-Type': 'application/json',
@@ -107,14 +123,20 @@ def main():
     }
 
     if module.check_mode:
-        module.exit_json(changed=True, msg='check mode: no API call made', url=url)
+        module.exit_json(
+            changed=True,
+            msg='check mode: no API call made',
+            url=url,
+            method=method,
+            payload=payload,
+        )
 
     response, info = fetch_url(
         module,
         url,
         headers=headers,
         data=json.dumps(payload),
-        method='POST',
+        method=method,
     )
 
     status = info.get('status', -1)

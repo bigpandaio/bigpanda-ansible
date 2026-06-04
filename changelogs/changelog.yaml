@@ -1,6 +1,6 @@
 releases:
   1.3.0:
-    release_date: '2026-06-01'
+    release_date: '2026-06-04'
     changes:
       release_summary: |
         Refresh for Ansible Automation Platform 2.5 / EDA. Modules now use
@@ -10,21 +10,30 @@ releases:
         to key on real BigPanda webhook fields and dispatch to AAP job
         templates instead of a debug stub.
       breaking_changes:
-        - All incident-scoped modules (``resolve``, ``assign``, ``comment``,
-          ``add_tag``, ``merge``, ``split``) now require ``environment_id``.
-          The previous code path referenced ``environment_id`` but did not
-          declare it in ``argument_spec``, so existing playbooks that omit
-          it must add it.
+        - The ``resolve_alert`` module's ``comments`` parameter changed
+          from ``type='list'`` to ``type='str'`` to match the documented
+          ``POST /batch-resolve/alerts`` body schema. Any existing
+          playbook passing a YAML list to ``comments`` will now fail
+          Ansible argument validation and must be updated to pass a
+          single string instead.
       major_changes:
         - Replaced ``requests`` with ``ansible.module_utils.urls.fetch_url``
           across all action modules. The collection no longer pulls in any
           out-of-tree Python dependency, which unblocks publishing to
           Automation Hub.
         - All module URL paths, HTTP methods, and request body schemas now
-          match the documented BigPanda v2.0 REST API exactly. In
-          particular ``resolve_alert.comments`` is now a single string
-          (matching the ``POST /batch-resolve/alerts`` body schema) rather
-          than a list of strings.
+          match the documented BigPanda v2.0 REST API exactly.
+        - Added an ``api_url`` parameter (default
+          ``https://api.bigpanda.io``, env fallback
+          ``BIGPANDA_API_URL``) to all action modules so the collection
+          can target EU (``https://api.eu.bigpanda.io``) and dedicated
+          BigPanda tenants. Use ``module_defaults`` to set it once per
+          play.
+        - Documented ``environment_id`` in every module's
+          ``DOCUMENTATION`` block. The parameter was already declared
+          ``required=True`` in ``argument_spec`` on the previous
+          release, so this is a documentation fix, not a behavior
+          change.
         - Rewrote ``extensions/eda/rulebooks/bigpanda-webhook.yml`` to match
           the documented BigPanda Notifications Webhook v2 payload shape.
           Rules now key on ``event.payload.incident.resolved``,
@@ -37,8 +46,8 @@ releases:
         - Fixed ``--check`` mode in all modules. They previously declared
           ``supports_check_mode=True`` but still issued the live HTTP
           request, violating Ansible's check-mode contract. In check mode
-          they now return the URL that would have been called without
-          touching the network.
+          they now return the ``url``, ``method``, and ``payload`` that
+          would have been sent, without touching the network.
         - Marked ``api_token`` as ``no_log=True`` so it is redacted from
           task output and the ``-v`` log.
         - Tightened ``galaxy.yml`` ``build_ignore`` to exclude ``.venv``,

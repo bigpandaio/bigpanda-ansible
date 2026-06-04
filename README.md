@@ -16,9 +16,10 @@ certified `bigpanda.incident` collection, and through community Galaxy.
 1. [What's included](#whats-included)
 2. [Action modules — reference](#action-modules--reference)
 3. [Quick local test](#quick-local-test)
-4. [Testing in Ansible Automation Platform](#testing-in-ansible-automation-platform)
-5. [EDA rulebook](#eda-rulebook)
-6. [License](#license)
+4. [Targeting EU / dedicated tenants](#targeting-eu--dedicated-tenants)
+5. [Testing in Ansible Automation Platform](#testing-in-ansible-automation-platform)
+6. [EDA rulebook](#eda-rulebook)
+7. [License](#license)
 
 ---
 
@@ -37,8 +38,12 @@ certified `bigpanda.incident` collection, and through community Galaxy.
 
 All modules call the v2.0 BigPanda public REST API. Authentication is a
 BigPanda **User API Key** (Settings → API Keys), passed via `api_token`.
-Every module supports `check_mode` — `--check` returns the URL that would
-have been called without making any HTTP request.
+The API host defaults to `https://api.bigpanda.io` and can be overridden
+per task with `api_url`, or once per play via `module_defaults` (see
+[Targeting EU / dedicated tenants](#targeting-eu--dedicated-tenants)).
+Every module supports `check_mode` — `--check` returns the `url`,
+`method`, and `payload` that would have been sent without making any
+HTTP request.
 
 ---
 
@@ -52,6 +57,7 @@ have been called without making any HTTP request.
 | `incident_id` | yes | Incident to comment on |
 | `comment` | yes | Comment text (≤ 1000 chars) |
 | `api_token` | yes | BigPanda User API Key |
+| `api_url` | no | BigPanda API base URL (default `https://api.bigpanda.io`; env fallback `BIGPANDA_API_URL`) |
 
 ```yaml
 - bigpanda.incident.comment:
@@ -70,6 +76,7 @@ have been called without making any HTTP request.
 | `tag_id` | yes | The tag name (must already exist in the env) |
 | `tag_value` | yes | Value to set |
 | `api_token` | yes | BigPanda User API Key |
+| `api_url` | no | BigPanda API base URL (default `https://api.bigpanda.io`; env fallback `BIGPANDA_API_URL`) |
 
 ```yaml
 - bigpanda.incident.add_tag:
@@ -88,6 +95,7 @@ have been called without making any HTTP request.
 | `incident_id` | yes | Incident to assign |
 | `assignee_id` | yes | BigPanda user UUID |
 | `api_token` | yes | BigPanda User API Key |
+| `api_url` | no | BigPanda API base URL (default `https://api.bigpanda.io`; env fallback `BIGPANDA_API_URL`) |
 
 ```yaml
 - bigpanda.incident.assign:
@@ -105,6 +113,7 @@ have been called without making any HTTP request.
 | `incident_id` | yes | Incident to resolve |
 | `resolution_comment` | no | Posted to the timeline before close |
 | `api_token` | yes | BigPanda User API Key |
+| `api_url` | no | BigPanda API base URL (default `https://api.bigpanda.io`; env fallback `BIGPANDA_API_URL`) |
 
 ```yaml
 - bigpanda.incident.resolve:
@@ -122,6 +131,7 @@ have been called without making any HTTP request.
 | `alert_ids` | yes | List of alert UUIDs (≤ 500 per call) |
 | `comments` | no | Resolution comment attached to the batch |
 | `api_token` | yes | BigPanda User API Key |
+| `api_url` | no | BigPanda API base URL (default `https://api.bigpanda.io`; env fallback `BIGPANDA_API_URL`) |
 
 ```yaml
 - bigpanda.incident.resolve_alert:
@@ -140,6 +150,7 @@ have been called without making any HTTP request.
 | `source_incidents` | yes | List of incident UUIDs to merge into the target |
 | `comment` | no | Posted to the timeline |
 | `api_token` | yes | BigPanda User API Key |
+| `api_url` | no | BigPanda API base URL (default `https://api.bigpanda.io`; env fallback `BIGPANDA_API_URL`) |
 
 ```yaml
 - bigpanda.incident.merge:
@@ -159,6 +170,7 @@ have been called without making any HTTP request.
 | `alert_ids` | yes | Alert UUIDs to move into a new incident |
 | `comment` | no | Posted to the timeline |
 | `api_token` | yes | BigPanda User API Key |
+| `api_url` | no | BigPanda API base URL (default `https://api.bigpanda.io`; env fallback `BIGPANDA_API_URL`) |
 
 ```yaml
 - bigpanda.incident.split:
@@ -199,8 +211,40 @@ ansible-playbook -i 'localhost,' -c local --check \
 YAML
 ```
 
-Drop `--check` to make the real API call. Each module supports check mode
-and will return the URL it would have called.
+Drop `--check` to make the real API call. Each module supports check
+mode and will return the `url`, `method`, and `payload` it would have
+sent — useful for previewing a destructive operation before running it.
+
+---
+
+## Targeting EU / dedicated tenants
+
+BigPanda is hosted at multiple endpoints. Set `api_url` on each module,
+or once per play via `module_defaults`:
+
+```yaml
+- hosts: localhost
+  module_defaults:
+    group/bigpanda.incident.all:
+      api_url:   "{{ bigpanda_api_url | default('https://api.bigpanda.io') }}"
+      api_token: "{{ bigpanda_api_token }}"
+  tasks:
+    - bigpanda.incident.comment:
+        environment_id: "{{ environment_id }}"
+        incident_id:    "{{ incident_id }}"
+        comment:        "Investigating"
+```
+
+Common values:
+
+| Tenant | `api_url` |
+|---|---|
+| US (default) | `https://api.bigpanda.io` |
+| EU (`prod-eu-central-1`) | `https://api.eu.bigpanda.io` |
+| Dedicated | provided by your BigPanda CSM |
+
+`api_url` also reads from the `BIGPANDA_API_URL` environment variable,
+which is handy for execution-environment image overrides.
 
 ---
 
@@ -233,7 +277,6 @@ payload shape:
 |---|---|---|
 | 1 | `event.payload.incident.resolved == true` | Run AAP job template `BigPanda - On Incident Resolved` |
 | 2 | `event.payload.incident.active == true` AND `event.payload.incident.status == "critical"` | Run AAP job template `BigPanda - On Critical Incident` |
-| 3 | `event.payload is defined` | Debug-log the payload (catch-all) |
 
 Both rules extract `incident_id` from `event.payload.incident.id` and
 `environment_id` from `event.payload.metadata.environment_id` and pass them
