@@ -240,7 +240,7 @@ Common values:
 | Tenant | `api_url` |
 |---|---|
 | US (default) | `https://api.bigpanda.io` |
-| EU (`prod-eu-central-1`) | `https://api.eu.bigpanda.io` |
+| EU (`prod-eu-central-1`) | `https://eu-api.bigpanda.io` |
 | Dedicated | provided by your BigPanda CSM |
 
 `api_url` also reads from the `BIGPANDA_API_URL` environment variable,

@@ -1,6 +1,6 @@
 releases:
   1.3.0:
-    release_date: '2026-06-04'
+    release_date: '2026-06-05'
     changes:
       release_summary: |
         Refresh for Ansible Automation Platform 2.5 / EDA. Modules now use
@@ -26,7 +26,7 @@ releases:
         - Added an ``api_url`` parameter (default
           ``https://api.bigpanda.io``, env fallback
           ``BIGPANDA_API_URL``) to all action modules so the collection
-          can target EU (``https://api.eu.bigpanda.io``) and dedicated
+          can target EU (``https://eu-api.bigpanda.io``) and dedicated
           BigPanda tenants. Use ``module_defaults`` to set it once per
           play.
         - Documented ``environment_id`` in every module's

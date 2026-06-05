@@ -38,7 +38,7 @@ options:
   api_url:
     description:
       - Base URL of the BigPanda API. Override for EU
-        (C(https://api.eu.bigpanda.io)) or dedicated tenant hosts.
+        (C(https://eu-api.bigpanda.io)) or dedicated tenant hosts.
       - May also be set via the C(BIGPANDA_API_URL) environment variable.
     required: false
     type: str
