@@ -1,0 +1,21 @@
+# Python / virtualenv
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# IDE / OS noise
+.idea/
+.vscode/
+.DS_Store
+
+# Claude Code local settings (per-user)
+.claude/
+
+# Collection build artifacts
+*.tar.gz
+collections/
+tests/output/
+
+# ansible-test scratch
+.ansible/

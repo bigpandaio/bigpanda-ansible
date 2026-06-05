@@ -1,14 +1,46 @@
 ---
+# BigPanda Notifications Webhook v2 — EDA rulebook.
+#
+# Payload shape reference:
+#   https://docs.bigpanda.io/en/notifications-webhook
+#
+# The relevant fields:
+#   event.payload.incident.id        (string)   — incident UUID
+#   event.payload.incident.active    (bool)     — true while any alert is active
+#   event.payload.incident.resolved  (bool)     — true once the incident is resolved
+#   event.payload.incident.status    (string)   — "critical" | "warning" | "unknown" | "ok"
+#   event.payload.incident.severity  (string)   — highest status ever reached
+#   event.payload.metadata.environment_id (string) — BigPanda environment UUID
 - name: BigPanda Webhook
   hosts: all
   sources:
     - ansible.eda.webhook:
         host: 0.0.0.0
         port: 6000
+        # token: "{{ BIGPANDA_WEBHOOK_TOKEN }}"
+        # hmac_secret: "{{ BIGPANDA_WEBHOOK_HMAC_SECRET }}"
+        # hmac_header: "x-bigpanda-signature"
 
   rules:
-    - name: Get BigPanda Share Information
-      condition: event.meta is defined
+    - name: BigPanda incident resolved
+      condition: event.payload.incident.resolved == true
       action:
-        debug:
-        
+        run_job_template:
+          name: BigPanda - On Incident Resolved
+          organization: Default
+          job_args:
+            extra_vars:
+              incident_id: "{{ event.payload.incident.id }}"
+              environment_id: "{{ event.payload.metadata.environment_id }}"
+
+    - name: BigPanda critical incident active
+      condition: event.payload.incident.active == true and event.payload.incident.status == "critical"
+      action:
+        run_job_template:
+          name: BigPanda - On Critical Incident
+          organization: Default
+          job_args:
+            extra_vars:
+              incident_id: "{{ event.payload.incident.id }}"
+              environment_id: "{{ event.payload.metadata.environment_id }}"
+              severity: "{{ event.payload.incident.severity }}"

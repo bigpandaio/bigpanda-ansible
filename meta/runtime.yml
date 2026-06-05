@@ -45,8 +45,15 @@ requires_ansible: '>=2.14.0'
 #   ansible_collections.ns.col.plugins.module_utils.old_location:
 #     redirect: ansible_collections.ns.col.plugins.module_utils.new_location
 
-# Groups of actions/modules that take a common set of options
-# action_groups:
-#   group_name:
-#     - module1
-#     - module2
+# Groups of actions/modules that take a common set of options.
+# Lets a playbook apply module_defaults once for every module in the
+# collection via `group/bigpanda.incident.all`.
+action_groups:
+  all:
+    - add_tag
+    - assign
+    - comment
+    - merge
+    - resolve
+    - resolve_alert
+    - split

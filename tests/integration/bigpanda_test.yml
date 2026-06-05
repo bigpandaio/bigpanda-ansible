@@ -15,7 +15,7 @@
         comment: "This is a test from the Ansible collection"
         api_token: "{{ api_token }}"
         environment_id: "{{ environment_id }}"
-        alert_ids: "{{ alert }}"
+        alert_ids: "{{ alert_ids }}"
     - name: Resolve alerts
       bigpanda.incident.resolve_alert:
         api_token: "{{ api_token }}"
@@ -33,6 +33,12 @@
       bigpanda.incident.comment:
         incident_id: "{{ incident_id }}"
         comment: "This is a test from the Ansible collection"
+        api_token: "{{ api_token }}"
+        environment_id: "{{ environment_id }}"
+    - name: Assign User to Incident
+      bigpanda.incident.assign:
+        incident_id: "{{ incident_id }}"
+        assignee_id: "{{ assignee_id }}"
         api_token: "{{ api_token }}"
         environment_id: "{{ environment_id }}"
     - name: Resolve Incident

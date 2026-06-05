@@ -11,27 +11,45 @@ DOCUMENTATION = """
 author:
   - Juan Cardozo (@JuanDCardozo)
 description:
-  - This module resolves a BigPanda alert by providing the alert ID and an optional resolution message.
+  - This module resolves one or more BigPanda alerts via the batch-resolve API.
 module: resolve_alert
 options:
-  alert_ids:
-    description: The ID of the alert to resolve.
+  environment_id:
+    description: The ID of the BigPanda environment containing the alerts.
     required: true
-  resolution:
-    description: The resolution message for the alert.
+    type: str
+  alert_ids:
+    description: The IDs of the alerts to resolve.
+    required: true
+    type: list
+    elements: str
+  comments:
+    description: Optional resolution comment attached to the batch.
     required: false
+    type: str
   api_token:
     description: The API token for authentication.
     required: true
-short_description: Resolve a BigPanda alert.
+    type: str
+  api_url:
+    description:
+      - Base URL of the BigPanda API. Override for EU
+        (C(https://eu-api.bigpanda.io)) or dedicated tenant hosts.
+      - May also be set via the C(BIGPANDA_API_URL) environment variable.
+    required: false
+    type: str
+    default: https://api.bigpanda.io
+short_description: Resolve one or more BigPanda alerts.
 version_added: 1.0.0
 """
 
 EXAMPLES = """
-- name: Resolve an alert
+- name: Resolve alerts
   bigpanda.incident.resolve_alert:
-    alert_ids: "54321"
-    resolution: "Alert resolved."
+    environment_id: "your_environment_id"
+    alert_ids:
+      - "54321"
+    comments: "Marking for regional similarity"
     api_token: "your_api_token"
 """
 
@@ -39,67 +57,89 @@ RETURN = """
 changed:
   description: Indicates if the alert resolution was successful.
   type: bool
-  returned: true/false
+  returned: always
   sample: true
+status:
+  description: HTTP status code returned by the BigPanda API.
+  type: int
+  returned: always
+  sample: 200
 result:
-  description: The response from the BigPanda server.
+  description: Response body returned by the BigPanda API.
   type: str
-  returned: BigPanda's Response
-  sample: "Alert resolved successfully."
+  returned: success
+  sample: "Alerts resolved successfully."
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from requests import HTTPError
-import requests
+import json
+
+from ansible.module_utils.basic import AnsibleModule, env_fallback
+from ansible.module_utils.urls import fetch_url
 
 
 def main():
-    """
-    The main function to execute the module.
-    """
     module = AnsibleModule(
         argument_spec=dict(
             environment_id=dict(type='str', required=True),
-            api_token=dict(type='str', required=True),
-            alert_ids=dict(type='list', required=True),
-            comments=dict(type='list', required=False),
+            api_token=dict(type='str', required=True, no_log=True),
+            alert_ids=dict(type='list', elements='str', required=True),
+            comments=dict(type='str', required=False),
+            api_url=dict(
+                type='str',
+                required=False,
+                default='https://api.bigpanda.io',
+                fallback=(env_fallback, ['BIGPANDA_API_URL']),
+            ),
         ),
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
     environment_id = module.params['environment_id']
     api_token = module.params['api_token']
     alert_ids = module.params['alert_ids']
     comments = module.params['comments']
+    api_url = module.params['api_url'].rstrip('/')
 
-    try:
-        module.debug("Batch Resolve Alerts")
+    url = (
+        f'{api_url}/resources/v2.0/environments/'
+        f'{environment_id}/batch-resolve/alerts'
+    )
+    method = 'POST'
+    headers = {
+        'Authorization': f'Bearer {api_token}',
+        'Content-Type': 'application/json',
+    }
+    payload = {'ids': alert_ids}
+    if comments:
+        payload['comments'] = comments
 
-        # Prepare the JSON data
-        data = {
-            "ids": alert_ids,
-        }
+    if module.check_mode:
+        module.exit_json(
+            changed=True,
+            msg='check mode: no API call made',
+            url=url,
+            method=method,
+            payload=payload,
+        )
 
-        if comments:
-            data['comments'] = comments
+    response, info = fetch_url(
+        module,
+        url,
+        headers=headers,
+        data=json.dumps(payload),
+        method=method,
+    )
 
-        # Set the request headers
-        headers = {
-            'Authorization': f'Bearer {api_token}',
-            'Content-Type': 'application/json',
-        }
+    status = info.get('status', -1)
+    if status < 200 or status >= 300:
+        module.fail_json(
+            msg=f"BigPanda API request failed: {info.get('msg', 'unknown error')} (HTTP {status})",
+            status=status,
+            body=info.get('body'),
+        )
 
-        # Send the POST request using the requests library
-        response = requests.post(
-            f'https://api.bigpanda.io/resources/v2.0/environments/{environment_id}/batch-resolve/alerts',
-            headers=headers,
-            json=data)
-
-        response.raise_for_status()
-        module.exit_json(changed=True, result=response.text)
-    except HTTPError as e:
-        # Log any HTTP errors
-        module.fail_json(msg=f"An HTTP error occurred: {str(e)}")
+    body = response.read().decode('utf-8') if response else ''
+    module.exit_json(changed=True, status=status, result=body)
 
 
 if __name__ == '__main__':
