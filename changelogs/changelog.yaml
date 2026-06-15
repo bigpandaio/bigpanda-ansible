@@ -1,6 +1,19 @@
 releases:
+  1.3.1:
+    release_date: '2026-06-15'
+    changes:
+      release_summary: |
+        Republish of 1.3.0 with the minimum ansible-core requirement
+        raised so the collection is accepted by Red Hat Automation Hub.
+        No functional changes from 1.3.0.
+      breaking_changes:
+        - Raised ``requires_ansible`` from ``>=2.14.0`` to ``>=2.16.0``.
+          Ansible-core 2.14 and 2.15 are past end-of-life and are no
+          longer accepted by Automation Hub's import lint. Users on
+          older ansible-core must upgrade before installing this
+          version.
   1.3.0:
-    release_date: '2026-06-05'
+    release_date: '2026-06-15'
     changes:
       release_summary: |
         Refresh for Ansible Automation Platform 2.5 / EDA. Modules now use
